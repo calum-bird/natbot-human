@@ -11,6 +11,13 @@ from sys import platform
 import openai
 import os
 from pprint import pprint
+from random_user_agent.user_agent import UserAgent
+from random_user_agent.params import SoftwareName, OperatingSystem
+
+software_names = [SoftwareName.CHROME.value]
+operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]   
+
+user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
 
 prompt_template = """
 You are an agent controlling a browser. You are given:
@@ -158,11 +165,13 @@ class Crawler:
 			sync_playwright()
 			.start()
 			.chromium.launch(
-				headless=False,
+				headless=False
 			)
 		)
 
-		self.page = self.browser.new_page()
+		user_agent = user_agent_rotator.get_random_user_agent()
+
+		self.page = self.browser.new_page(user_agent=user_agent)
 		self.page.set_viewport_size({"width": 1280, "height": 1080})
 
 	def go_to_page(self, url):
@@ -195,13 +204,14 @@ class Crawler:
 			x = element.get("center_x")
 			y = element.get("center_y")
 			
-			self.page.mouse.click(x, y)
+			self.page.mouse.move(x, y, steps=20)
+			self.page.mouse.click(x, y, delay=550)
 		else:
 			print("Could not find element")
 
 	def type(self, id, text):
 		self.click(id)
-		self.page.keyboard.type(text)
+		self.page.keyboard.type(text, delay=50)
 
 	def enter(self):
 		self.page.keyboard.press("Enter")
@@ -596,31 +606,34 @@ if (
 		print("Objective: " + objective)
 		print("----------------\n" + browser_content + "\n----------------\n")
 		if len(gpt_cmd) > 0:
-			print("Suggested command: " + gpt_cmd)
-
-
-		command = input()
-		if command == "r" or command == "":
+			# Go full auto!
+			print("Running command: " + gpt_cmd)
 			run_cmd(gpt_cmd)
-		elif command == "g":
-			url = input("URL:")
-			_crawler.go_to_page(url)
-		elif command == "u":
-			_crawler.scroll("up")
-			time.sleep(1)
-		elif command == "d":
-			_crawler.scroll("down")
-			time.sleep(1)
-		elif command == "c":
-			id = input("id:")
-			_crawler.click(id)
-			time.sleep(1)
-		elif command == "t":
-			id = input("id:")
-			text = input("text:")
-			_crawler.type(id, text)
-			time.sleep(1)
-		elif command == "o":
-			objective = input("Objective:")
-		else:
-			print_help()
+
+
+		#command = input()
+		#print("RUNNING COMMAND: " + command)
+		#if command == "r" or command == "":
+		#	run_cmd(gpt_cmd)
+		#elif command == "g":
+		#	url = input("URL:")
+		#	_crawler.go_to_page(url)
+		#elif command == "u":
+		#	_crawler.scroll("up")
+		#	time.sleep(1)
+		#elif command == "d":
+		#	_crawler.scroll("down")
+		#	time.sleep(1)
+		#elif command == "c":
+		#	id = input("id:")
+		#	_crawler.click(id)
+		#	time.sleep(1)
+		#elif command == "t":
+		#	id = input("id:")
+		#	text = input("text:")
+		#	_crawler.type(id, text)
+		#	time.sleep(1)
+		#elif command == "o":
+		#	objective = input("Objective:")
+		#else:
+		#	print_help()
