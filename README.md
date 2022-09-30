@@ -1,4 +1,4 @@
-# natbot
+# natbot (human mode)
 
 Drive a browser with GPT-3
 
@@ -12,3 +12,10 @@ Lots of ideas for improvement:
 - Let the agent use multiple tabs and switch between them
 
 Improvements welcome!
+
+### Get Started:
+`pip install -r requirements.txt`
+
+`playwright install`
+
+`python natbot.py`
